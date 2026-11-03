@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: python-host
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    # QUAN TRỌNG: chỉ 1 worker, vì danh sách chương trình đang chạy nằm trong bộ nhớ của tiến trình này
+    startCommand: gunicorn backend:app --workers 1 --threads 8 --timeout 120
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: SECRET_KEY            # Render tự sinh chuỗi ngẫu nhiên để ký phiên đăng nhập
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      # Dữ liệu (tài khoản, file người dùng) mặc định ở ./data — đĩa tạm của gói Free, MẤT khi deploy lại/khởi động lại.
+      # Muốn giữ lâu dài: gắn Disk (gói trả phí) tại /var/data rồi thêm biến DB_PATH=/var/data/pyhost.db
